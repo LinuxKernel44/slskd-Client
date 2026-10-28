@@ -1,0 +1,26 @@
+[Unit]
+Description=Read-only file server for slskd downloads (Slskd Client companion)
+# Same ordering as slskd-webui-proxy.socket: the relay tunnel first, ufw gates who may connect.
+After=network-online.target wg-quick@wg-lea-relay.service slskd-webui-proxy.socket
+Wants=wg-quick@wg-lea-relay.service
+
+[Service]
+Type=simple
+User=slskdperso
+Group=slskdperso
+ExecStart=/usr/bin/python3 -I /opt/slskd-files/slskd-files-server.py
+Environment=SLSKD_FILES_DIR=/home/slskdperso/downloads
+Environment=SLSKD_FILES_PORT=15501
+Restart=always
+RestartSec=3
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6
+MemoryMax=128M
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <!-- download arrow into a tray, with sound waves -->
+    <path android:fillColor="#FFFFFFFF" android:pathData="M50,28h8v22h9l-13,14l-13,-14h9z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M34,70h40v6h-40z" />
+    <path android:fillColor="#B3FFFFFF" android:pathData="M30,50a4,4 0 0 1 4,4v6a4,4 0 0 1 -8,0v-6a4,4 0 0 1 4,-4zM78,50a4,4 0 0 1 4,4v6a4,4 0 0 1 -8,0v-6a4,4 0 0 1 4,-4z" />
+</vector>

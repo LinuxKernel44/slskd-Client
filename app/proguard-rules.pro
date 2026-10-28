@@ -1,0 +1,5 @@
+-keepattributes *Annotation*, InnerClasses
+-dontwarn org.slf4j.**
+-keepclassmembers class kotlinx.serialization.json.** { *** Companion; }
+-keep,includedescriptorclasses class com.linuxkernel44.slskdclient.**$$serializer { *; }
+-keepclassmembers class com.linuxkernel44.slskdclient.** { *** Companion; }

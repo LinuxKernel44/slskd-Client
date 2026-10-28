@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The slskd address is user-configured and usually plain HTTP on a LAN/VPN, so cleartext is allowed. -->
+<network-security-config><base-config cleartextTrafficPermitted="true"/></network-security-config>
