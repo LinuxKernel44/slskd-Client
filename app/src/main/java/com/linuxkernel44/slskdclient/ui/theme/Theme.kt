@@ -36,19 +36,19 @@ data class SlskdColors(
 )
 
 val DarkColors = SlskdColors(
-    isDark = true, bg = Color(0xFF060914), text = Color(0xFFEEF1FF), muted = Color(0xFFB4BAD6),
+    isDark = true, bg = Color(0xFF070D12), text = Color(0xFFEEF1FF), muted = Color(0xFFB4BAD6),
     accentA = Color(0xFF9FB0FF), accentB = Color(0xFF5EE7D6), onAccent = Color(0xFF04101C),
     glassTint = Color(0x14FFFFFF), border = Color(0x2BFFFFFF), solid = Color(0xFF151A30), field = Color(0x59050819),
     danger = Color(0xFFFF7A8A), ok = Color(0xFF5EF0B0),
-    blob1 = Color(0xFF5E6EFF), blob2 = Color(0xFF22D3C5), blob3 = Color(0xFFB856FF),
+    blob1 = Color(0xFFD02A40), blob2 = Color(0xFF1F9D63), blob3 = Color(0xFFE8B04A),
 )
 
 val LightColors = SlskdColors(
-    isDark = false, bg = Color(0xFFEFF1FB), text = Color(0xFF12142B), muted = Color(0xFF4F5475),
+    isDark = false, bg = Color(0xFFEEF5F1), text = Color(0xFF12142B), muted = Color(0xFF4F5475),
     accentA = Color(0xFF4B5CFF), accentB = Color(0xFF0FB5A6), onAccent = Color(0xFFFFFFFF),
     glassTint = Color(0x73FFFFFF), border = Color(0xB3FFFFFF), solid = Color(0xFFFFFFFF), field = Color(0x40FFFFFF),
     danger = Color(0xFFC62840), ok = Color(0xFF0E8A5F),
-    blob1 = Color(0xFF9AA7FF), blob2 = Color(0xFF6FE3D6), blob3 = Color(0xFFD7A2FF),
+    blob1 = Color(0xFFFF9AA5), blob2 = Color(0xFF8BE0B5), blob3 = Color(0xFFFFD98A),
 )
 
 data class GlassConfig(val enabled: Boolean = true, val intensity: Float = 0.7f)

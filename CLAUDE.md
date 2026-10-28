@@ -26,3 +26,4 @@ Public repo `LinuxKernel44/slskd-Client`, branch `main`. Chat with David in Fren
 
 ## Session log
 - 2026-10-28 — Initial implementation: all screens, companion server installed on lea, signing key created, v1.0.0.
+- 2026-10-28 — Replaced the aurora with a Christmas background (firs, snow, string lights) in `Shell.kt` (`AuroraBackground`) and a green/red/gold palette in `Theme.kt`; tested on the S10 (debug build). Not released yet.
