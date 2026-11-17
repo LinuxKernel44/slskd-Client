@@ -120,13 +120,13 @@ class ApiClient(
     /** Logs in and stores the token (and the password when [remember] is set). */
     suspend fun login(username: String, password: String, remember: Boolean) {
         val payload = AppJson.encodeToString(mapOf("username" to username, "password" to password))
-        val res = withContext(Dispatchers.IO) {
-            http.newCall(Request.Builder().url("$api/session").post(payload.toRequestBody(JSON_MEDIA)).build()).execute()
-        }
-        val txt = res.use {
-            if (it.code == 401) throw ApiException(401, "Wrong username or password")
-            if (!it.isSuccessful) throw ApiException(it.code, "Login failed (HTTP ${it.code})")
-            it.body.string()
+        // The body is read inside the IO block too: a late-arriving body blocks on the socket.
+        val txt = withContext(Dispatchers.IO) {
+            http.newCall(Request.Builder().url("$api/session").post(payload.toRequestBody(JSON_MEDIA)).build()).execute().use {
+                if (it.code == 401) throw ApiException(401, "Wrong username or password")
+                if (!it.isSuccessful) throw ApiException(it.code, "Login failed (HTTP ${it.code})")
+                it.body.string()
+            }
         }
         val session = AppJson.decodeFromString<SessionToken>(txt)
         token = session.token
@@ -154,7 +154,6 @@ class ApiClient(
     suspend fun appState(): AppState = get("/application")
     suspend fun latestVersion(force: Boolean = false): VersionInfo = get("/application/version/latest?forceCheck=$force")
     suspend fun restartApp() { call("PUT", "/application").discard() }
-    suspend fun shutdownApp() { call("DELETE", "/application").discard() }
     suspend fun serverState(): ServerState = get("/server")
     suspend fun connectServer() { call("PUT", "/server").discard() }
     suspend fun disconnectServer(message: String = "client disconnected from Slskd Client") {

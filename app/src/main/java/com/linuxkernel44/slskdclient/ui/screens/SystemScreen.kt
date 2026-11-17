@@ -168,9 +168,6 @@ private fun OverviewTab(vm: AppVm) {
                     GlassButton({
                         vm.showSheet { ConfirmSheet("Restart slskd?", "The application restarts; the connection drops for a few seconds.", "Restart", true, { vm.run("Restarting…") { it.restartApp() } }, { vm.closeSheet() }) }
                     }, Modifier.weight(1f)) { GIcon(R.drawable.ic_refresh, size = 18.dp); Txt("Restart", weight = FontWeight.Medium) }
-                    GlassButton({
-                        vm.showSheet { ConfirmSheet("Shut down slskd?", "The service stops and cannot be started from this app.", "Shut down", true, { vm.run("Shutting down…") { it.shutdownApp() } }, { vm.closeSheet() }) }
-                    }, Modifier.weight(1f)) { GIcon(R.drawable.ic_power, size = 18.dp, tint = c.danger); Txt("Shut down", weight = FontWeight.Medium, color = c.danger) }
                 }
             }
         }
