@@ -1,5 +1,5 @@
 [Unit]
-Description=Read-only file server for slskd downloads (Slskd Client companion)
+Description=File manager server for slskd (Slskd Client companion)
 # Same ordering as slskd-webui-proxy.socket: the relay tunnel first, ufw gates who may connect.
 After=network-online.target wg-quick@wg-lea-relay.service slskd-webui-proxy.socket
 Wants=wg-quick@wg-lea-relay.service
@@ -8,19 +8,25 @@ Wants=wg-quick@wg-lea-relay.service
 Type=simple
 User=slskdperso
 Group=slskdperso
+# Music is group-writable by navidrome; slskdperso is a member, new files inherit that group (setgid dirs).
+SupplementaryGroups=navidrome
 ExecStart=/usr/bin/python3 -I /opt/slskd-files/slskd-files-server.py
-Environment=SLSKD_FILES_DIR=/home/slskdperso/downloads
 Environment=SLSKD_FILES_PORT=15501
+Environment=SLSKD_FILES_ROOTS=music=Music=/srv/musique;downloads=Downloads=/home/slskdperso/downloads;incomplete=Incomplete=/home/slskdperso/incomplete
+Environment=SLSKD_FILES_TRASH=/srv/slskd-files-trash
+# Optional: NAVIDROME_USER / NAVIDROME_PASSWORD (enables the "rescan Navidrome" action). Root-owned, group-readable.
+EnvironmentFile=-/etc/slskd-files.env
 Restart=always
 RestartSec=3
 NoNewPrivileges=yes
 ProtectSystem=strict
 ProtectHome=read-only
+ReadWritePaths=/srv/musique /home/slskdperso /srv/slskd-files-trash
 PrivateTmp=yes
 ProtectKernelTunables=yes
 ProtectControlGroups=yes
-RestrictAddressFamilies=AF_INET AF_INET6
-MemoryMax=128M
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+MemoryMax=256M
 
 [Install]
 WantedBy=multi-user.target

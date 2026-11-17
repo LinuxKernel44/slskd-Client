@@ -13,6 +13,7 @@ data class AppSettings(
     val notifyMessages: Boolean = true,
     val backgroundService: Boolean = true,
     val checkUpdates: Boolean = true,
+    val autoRescan: Boolean = true,        // rescan slskd shares (and Navidrome) after file manager changes
 )
 
 class SettingsStore(context: Context) {
@@ -28,6 +29,7 @@ class SettingsStore(context: Context) {
         notifyMessages = prefs.getBoolean("notifyMessages", true),
         backgroundService = prefs.getBoolean("backgroundService", true),
         checkUpdates = prefs.getBoolean("checkUpdates", true),
+        autoRescan = prefs.getBoolean("autoRescan", true),
     )
 
     fun update(block: (AppSettings) -> AppSettings) {
@@ -35,6 +37,6 @@ class SettingsStore(context: Context) {
         _state.value = s
         prefs.edit().putString("theme", s.theme).putBoolean("glass", s.glass).putFloat("glassIntensity", s.glassIntensity)
             .putBoolean("notifyDownloads", s.notifyDownloads).putBoolean("notifyMessages", s.notifyMessages)
-            .putBoolean("backgroundService", s.backgroundService).putBoolean("checkUpdates", s.checkUpdates).apply()
+            .putBoolean("backgroundService", s.backgroundService).putBoolean("checkUpdates", s.checkUpdates).putBoolean("autoRescan", s.autoRescan).apply()
     }
 }

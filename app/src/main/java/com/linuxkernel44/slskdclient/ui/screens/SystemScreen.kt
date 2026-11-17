@@ -459,6 +459,7 @@ private fun AppTab(vm: AppVm) {
                     Txt("About", size = 16.sp, weight = FontWeight.SemiBold)
                     KeyValue("Version", BuildConfig.VERSION_NAME)
                     KeyValue("Source", "github.com/LinuxKernel44/slskd-Client")
+                    SettingRow("Rescan shares after file changes", "Rescans slskd shares (and Navidrome for the Music folder) after the file manager changes files") { GlassToggle(settings.autoRescan, { v -> vm.graph.settings.update { it.copy(autoRescan = v) } }) }
                     SettingRow("Check for updates on start") { GlassToggle(settings.checkUpdates, { v -> vm.graph.settings.update { it.copy(checkUpdates = v) } }) }
                     val u = vm.update
                     if (u != null) {

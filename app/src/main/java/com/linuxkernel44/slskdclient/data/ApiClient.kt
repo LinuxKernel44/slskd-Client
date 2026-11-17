@@ -88,6 +88,32 @@ class ApiClient(
         res
     }
 
+    /** Client for the file manager: no timeouts, since zips and uploads run as long as the transfer does. */
+    val xferHttp: OkHttpClient by lazy {
+        http.newBuilder().callTimeout(0, TimeUnit.MILLISECONDS).readTimeout(0, TimeUnit.MILLISECONDS).writeTimeout(0, TimeUnit.MILLISECONDS).build()
+    }
+
+    /** Authenticated request to an absolute URL (the companion file server), with the same silent re-login on 401 as [call]. */
+    suspend fun callUrl(url: String, method: String = "GET", body: okhttp3.RequestBody? = null, client: OkHttpClient = http, retry: Boolean = true): Response = withContext(Dispatchers.IO) {
+        val rb = body ?: if (method == "POST" || method == "PUT") "".toRequestBody(null) else null
+        val res = client.newCall(Request.Builder().url(url).auth().method(method, rb).build()).execute()
+        if (res.code == 401 && retry) {
+            res.close()
+            if (relogin()) return@withContext callUrl(url, method, body, client, false)
+            onAuthLost()
+            throw ApiException(401, "Session expired")
+        }
+        if (!res.isSuccessful) {
+            val text = runCatching { res.body.string() }.getOrDefault("")
+            res.close()
+            val msg = runCatching { AppJson.parseToJsonElement(text).jsonObject["error"]?.jsonPrimitive?.content }.getOrNull()
+            throw ApiException(res.code, msg?.takeIf { it.isNotBlank() } ?: "HTTP ${res.code}")
+        }
+        res
+    }
+
+    val fm: FileManager by lazy { FileManager(this) }
+
     private fun errorText(code: Int, body: String): String {
         val msg = runCatching { AppJson.parseToJsonElement(body).jsonObject.let { it["detail"] ?: it["title"] ?: it["message"] } }.getOrNull()
             ?.jsonPrimitive?.content

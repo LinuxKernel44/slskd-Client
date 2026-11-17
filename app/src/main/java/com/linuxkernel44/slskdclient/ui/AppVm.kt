@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.linuxkernel44.slskdclient.data.ApiClient
+import com.linuxkernel44.slskdclient.data.FmState
 import com.linuxkernel44.slskdclient.data.ApiException
 import com.linuxkernel44.slskdclient.data.Profile
 import com.linuxkernel44.slskdclient.graph
@@ -36,6 +37,7 @@ class AppVm(app: Application) : AndroidViewModel(app) {
     val graph = app.graph
     val player = PlayerController(app)
     val saver = Saver(app, graph)
+    val fm = FmState()
     private val updater = Updater(app)
 
     var auth by mutableStateOf<AuthState>(AuthState.Starting); private set
@@ -82,6 +84,33 @@ class AppVm(app: Application) : AndroidViewModel(app) {
             throw e
         } catch (e: Exception) {
             say(friendly(e))
+        }
+    }
+
+    // ---- file manager: rescan shares after changes ----
+    private var rescanJob: Job? = null
+    private val dirtyRoots = mutableSetOf<String>()
+
+    /** Called after the file manager changed files in [roots]; rescans slskd (and Navidrome for music) once things settle. */
+    fun fmChanged(vararg roots: String) {
+        if (!graph.settings.state.value.autoRescan) return
+        val shared = roots.filter { it == "music" || it == "downloads" }
+        if (shared.isEmpty()) return
+        dirtyRoots += shared
+        rescanJob?.cancel()
+        rescanJob = viewModelScope.launch {
+            delay(8000)
+            val touched = dirtyRoots.toSet(); dirtyRoots.clear()
+            val client = api ?: return@launch
+            try {
+                val navidrome = "music" in touched && client.fm.roots().navidrome
+                client.fm.rescan(slskd = true, navidrome = navidrome)
+                say(if (navidrome) "Rescanning slskd shares and Navidrome…" else "Rescanning slskd shares…")
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                say("Rescan failed: " + friendly(e))
+            }
         }
     }
 

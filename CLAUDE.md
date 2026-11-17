@@ -7,8 +7,10 @@ Public repo `LinuxKernel44/slskd-Client`, branch `main`. Chat with David in Fren
 - `app/` — the Android app. `data/` (models, `ApiClient` REST, `Hub` SignalR-over-WebSocket, `Profiles`/`Secrets` encrypted
   storage, `Settings`, `Graph` singleton), `service/` (notification watcher), `player/` (Media3), `save/` (copy to phone),
   `update/` (GitHub Releases updater), `ui/` (theme, glass components, screens).
-- `server/` — `slskd-files` companion (read-only file server, stdlib Python). Installed on `lea` as `slskd-files.service`,
+- `server/` — `slskd-files` companion (file manager server, stdlib Python, v2). Installed on `lea` as `slskd-files.service`,
   port 15501, ufw rules on `wg-lea-relay` and `tailscale0`. It validates the caller's slskd JWT against slskd itself.
+  Reinstall with `sudo server/install.sh` (restarts the service; nothing else needed). `data/FileManager.kt` is the client,
+  `ui/screens/FileManagerScreen.kt` the UI (replaces the old read-only Files tab).
 
 ## Facts worth knowing
 - slskd's API has **no endpoint that returns file content**; hence the companion server. File paths in `/files/{root}/directories/{b64}`
