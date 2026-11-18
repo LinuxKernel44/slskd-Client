@@ -115,9 +115,15 @@ class ApiClient(
     val fm: FileManager by lazy { FileManager(this) }
 
     private fun errorText(code: Int, body: String): String {
-        val msg = runCatching { AppJson.parseToJsonElement(body).jsonObject.let { it["detail"] ?: it["title"] ?: it["message"] } }.getOrNull()
-            ?.jsonPrimitive?.content
-        return msg?.takeIf { it.isNotBlank() } ?: body.take(200).ifBlank { "HTTP $code" }
+        // slskd answers with an object ({"title": ...}) or a bare JSON string ("User x appears to be offline").
+        val msg = runCatching {
+            when (val e = AppJson.parseToJsonElement(body)) {
+                is kotlinx.serialization.json.JsonObject -> (e["detail"] ?: e["title"] ?: e["message"])?.jsonPrimitive?.content
+                is kotlinx.serialization.json.JsonPrimitive -> e.content
+                else -> null
+            }
+        }.getOrNull()
+        return msg?.takeIf { it.isNotBlank() } ?: body.take(200).ifBlank { if (code == 404) "Not found (HTTP 404)" else "HTTP $code" }
     }
 
     private suspend fun relogin(): Boolean {
@@ -213,8 +219,18 @@ class ApiClient(
     suspend fun userInfo(username: String): UserInfo = get("/users/${enc(username)}/info")
     suspend fun userStatus(username: String): UserStatus = get("/users/${enc(username)}/status")
     suspend fun userEndpoint(username: String): String = text("GET", "/users/${enc(username)}/endpoint").trim('"')
-    suspend fun browseUser(username: String): BrowseResponse =
-        withContext(Dispatchers.IO) { call("GET", "/users/${enc(username)}/browse", long = true).use { AppJson.decodeFromString<BrowseResponse>(it.body.string()) } }
+    suspend fun browseUser(username: String): BrowseResponse {
+        // A peer that just connected or is slow to answer can make slskd return 404 once; retry a couple of times before giving up.
+        var attempt = 0
+        while (true) {
+            try {
+                return withContext(Dispatchers.IO) { call("GET", "/users/${enc(username)}/browse", long = true).use { AppJson.decodeFromString<BrowseResponse>(it.body.string()) } }
+            } catch (e: ApiException) {
+                if (e.code != 404 || ++attempt > 2) throw e
+                kotlinx.coroutines.delay(1500)
+            }
+        }
+    }
     suspend fun browseStatus(username: String): BrowseStatus = get("/users/${enc(username)}/browse/status")
     suspend fun userDirectory(username: String, directory: String): List<BrowseDirectory> =
         text("POST", "/users/${enc(username)}/directory", AppJson.encodeToString(DirectoryRequest(directory))).let { AppJson.decodeFromString(it) }
