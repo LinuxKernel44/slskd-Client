@@ -29,3 +29,4 @@ Public repo `LinuxKernel44/slskd-Client`, branch `main`. Chat with David in Fren
 ## Session log
 - 2026-10-28 — Initial implementation: all screens, companion server installed on lea, signing key created, v1.0.0.
 - 2026-10-28 — Replaced the aurora with a Christmas background (firs, snow, string lights) in `Shell.kt` (`AuroraBackground`) and a green/red/gold palette in `Theme.kt`; tested on the S10 (debug build). Released as v1.0.1 (versionCode 2).
+- 2026-11-20 — v1.1.0–1.1.2: full file manager (server v2 + `FileManagerScreen`), browse 404 retry + real slskd error text, Options tab explains a 403 (slskd `remote_configuration` was off). Enabled `remote_configuration: true` in `/home/slskdperso/.local/share/slskd/slskd.yml` on lea (backup `~/snapshots/slskd.yml.bak-20261120`); any slskd account can now edit the YAML from the app.
