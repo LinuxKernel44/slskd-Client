@@ -36,6 +36,7 @@ import okio.Source
 )
 @Serializable data class FmTrashItem(val id: String, val root: String, val path: String, val name: String, val dir: Boolean = false, val size: Long = 0, val deleted: Long = 0)
 @Serializable data class FmTrash(val items: List<FmTrashItem> = emptyList(), val days: Int = 30)
+@Serializable data class FmSharedSize(val bytes: Long = 0, val files: Long = 0)
 @Serializable data class FmError(val path: String = "", val error: String = "")
 @Serializable data class FmResult(val done: Int = 0, val skipped: Int = 0, val errors: List<FmError> = emptyList())
 
@@ -89,6 +90,7 @@ class FileManager(private val api: ApiClient) {
     suspend fun list(root: String, path: String): List<FmEntry> = get("list", FmList.serializer(), "root" to root, "path" to path).entries
     suspend fun search(root: String, path: String, text: String): FmList = get("search", FmList.serializer(), "root" to root, "path" to path, "q" to text)
     suspend fun info(ref: FmRef): FmInfo = get("info", FmInfo.serializer(), "root" to ref.root, "path" to ref.path)
+    suspend fun sharedSize(): FmSharedSize = get("shared-size", FmSharedSize.serializer())
     suspend fun trash(): FmTrash = get("trash", FmTrash.serializer())
 
     /** Streaming / download URL of one file; the app adds the bearer token itself. */

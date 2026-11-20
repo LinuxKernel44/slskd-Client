@@ -100,6 +100,7 @@ private fun OverviewTab(vm: AppVm) {
     val api = vm.api ?: return
     val c = LocalColors.current
     val state = rememberPoll(api, intervalMs = 3000) { api.appState() }
+    val sharedSize = rememberPoll(api, intervalMs = 60000) { runCatching { api.fm.sharedSize() }.getOrNull() }
     val s = state.value
     LazyColumn(contentPadding = pagePadding(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         item { SystemHeader(vm) }
@@ -151,6 +152,8 @@ private fun OverviewTab(vm: AppVm) {
                         KeyValue("Version", s.version.current.orEmpty())
                         KeyValue("Latest", s.version.latest.orEmpty() + if (s.version.isUpdateAvailable) "  (update available)" else "")
                         KeyValue("Shares", "${s.shares.directories} dirs · ${s.shares.files} files" + if (s.shares.scanning) " · scanning" else "")
+                        // Total size comes from the companion server (slskd's API has no size); hidden when it is unreachable.
+                        sharedSize.value?.let { KeyValue("Shared size", fmtBytes(it.bytes)) }
                     }
                 }
             }

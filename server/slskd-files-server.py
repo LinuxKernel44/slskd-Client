@@ -73,6 +73,30 @@ _write_lock = threading.Lock()  # serializes mutations (move/copy/delete/restore
 _range_re = re.compile(r"^bytes=(\d*)-(\d*)$")
 
 
+_SIZE_CACHE = {"at": 0.0, "value": None}
+
+
+def shared_size():
+    """Total bytes of the roots slskd shares (music + downloads); cached for two minutes."""
+    now = time.time()
+    if _SIZE_CACHE["value"] is not None and now - _SIZE_CACHE["at"] < 120:
+        return _SIZE_CACHE["value"]
+    total = files = 0
+    for rid in ("music", "downloads"):
+        root = ROOTS.get(rid)
+        if not root:
+            continue
+        for dirpath, _dirs, names in os.walk(root["path"]):
+            for name in names:
+                try:
+                    total += os.lstat(os.path.join(dirpath, name)).st_size
+                    files += 1
+                except OSError:
+                    pass
+    _SIZE_CACHE.update(at=now, value={"bytes": total, "files": files})
+    return _SIZE_CACHE["value"]
+
+
 class ApiError(Exception):
     def __init__(self, status, message):
         super().__init__(message)
@@ -551,6 +575,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     roots.append({"id": rid, "name": root["name"], "free": usage.free, "total": usage.total})
             return self._json(200, {"version": VERSION, "roots": roots, "trashDays": TRASH_DAYS,
                                     "navidrome": bool(NAVIDROME_USER and NAVIDROME_PASSWORD)})
+        if route == "shared-size":
+            return self._json(200, shared_size())
         if route == "list":
             directory = locate_dir(q("root"), q("path"))
             entries = []
