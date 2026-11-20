@@ -21,6 +21,7 @@ import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
+const val REMOTE_CONFIG_OFF = "Remote configuration is disabled on this slskd server."
 class ApiException(val code: Int, message: String) : IOException(message)
 
 /** Builds the OkHttp client for a profile; trusts every certificate only when the profile explicitly allows it. */
@@ -265,9 +266,13 @@ class ApiClient(
 
     // ---- options / logs / events ----
 
-    suspend fun optionsYaml(): String = text("GET", "/options/yaml").let { runCatching { AppJson.decodeFromString<String>(it) }.getOrDefault(it) }
+    /** slskd answers 403 on the YAML/debug endpoints unless `remote_configuration` is enabled in its config. */
+    private suspend fun <T> remoteConfig(block: suspend () -> T): T =
+        try { block() } catch (e: ApiException) { if (e.code == 403) throw ApiException(403, REMOTE_CONFIG_OFF) else throw e }
+
+    suspend fun optionsYaml(): String = remoteConfig { text("GET", "/options/yaml").let { runCatching { AppJson.decodeFromString<String>(it) }.getOrDefault(it) } }
     suspend fun optionsYamlLocation(): String = text("GET", "/options/yaml/location").trim('"')
-    suspend fun optionsDebug(): String = text("GET", "/options/debug")
+    suspend fun optionsDebug(): String = remoteConfig { text("GET", "/options/debug") }
     /** Returns null when valid, otherwise the validation message. */
     suspend fun validateYaml(yaml: String): String? = try {
         text("POST", "/options/yaml/validate", AppJson.encodeToString(yaml)).trim('"').takeIf { it.isNotBlank() && it != "null" }

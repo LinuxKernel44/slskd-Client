@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.linuxkernel44.slskdclient.BuildConfig
 import com.linuxkernel44.slskdclient.R
+import com.linuxkernel44.slskdclient.data.REMOTE_CONFIG_OFF
 import com.linuxkernel44.slskdclient.data.AppEvent
 import com.linuxkernel44.slskdclient.data.AppJson
 import com.linuxkernel44.slskdclient.data.LogEntry
@@ -197,7 +198,14 @@ private fun OptionsTab(vm: AppVm) {
         location.value?.takeIf { it.isNotBlank() }?.let { loc -> item { Muted("File: $loc", size = 12.sp) } }
         val text = if (mode == 0) yaml.value else debug.value
         val err = if (mode == 0) yaml.error else debug.error
-        err?.let { item { ErrorBanner(it, { yaml.refresh(); debug.refresh() }) } }
+        if (err == REMOTE_CONFIG_OFF) item {
+            GlassCard(Modifier.fillMaxWidth()) {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Txt("Options are read-only here", size = 15.sp, weight = FontWeight.SemiBold)
+                    Muted("This slskd server has remote configuration turned off, so the YAML can't be read or edited from the app. To allow it, set remote_configuration: true under the web section of slskd.yml (or SLSKD_REMOTE_CONFIGURATION=true) and restart slskd.", size = 13.sp)
+                }
+            }
+        } else err?.let { item { ErrorBanner(it, { yaml.refresh(); debug.refresh() }) } }
         if (text == null && err == null) item { Loading() }
         if (text != null) {
             item {
